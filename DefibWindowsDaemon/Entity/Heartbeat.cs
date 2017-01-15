@@ -1,6 +1,8 @@
-﻿namespace Defib.Entity
+﻿using System;
+
+namespace Defib.Entity
 {
-    public class Heartbeat
+    public class Heartbeat : ICloneable
     {
         public int Id;
         public string Name;
@@ -9,5 +11,10 @@
         public int NextBeat;
         public int LastBeat;
         public string Script;
+
+        public object Clone()
+        {
+            return this.MemberwiseClone();
+        }
     }
 }

@@ -49,7 +49,7 @@ namespace Defib.Service
 
                     int currentTimestamp = Utils.GetCurrentTimestamp();
 
-                    foreach (KeyValuePair<int, Heartbeat> pairs in Context.Heartbeats)
+                    foreach (System.Collections.Generic.KeyValuePair<int, Heartbeat> pairs in Context.Heartbeats)
                     {
                         if (Processed.ContainsKey(pairs.Value.Id))
                         {
@@ -119,7 +119,7 @@ namespace Defib.Service
                 else
                 {
                     // We are not recalculating, so just go your own way *random fleetwood mac*
-                    foreach (KeyValuePair<int, Heartbeat> pairs in Context.Heartbeats)
+                    foreach (System.Collections.Generic.KeyValuePair<int, Heartbeat> pairs in Context.Heartbeats)
                     {
                         if (Processed.ContainsKey(pairs.Value.Id))
                         {
@@ -141,6 +141,7 @@ namespace Defib.Service
 
                         Context.Heartbeats[pairs.Key] = heartbeat;
                         Processed.Add(heartbeat.Id, heartbeat);
+                        Executing.Remove(heartbeat.Id);
                     }
                 }
 
@@ -166,7 +167,7 @@ namespace Defib.Service
                 {
                     Batch currentBatch = Batches[currentTimestamp];
 
-                    foreach (KeyValuePair<int, Heartbeat> pairs in currentBatch.Entries)
+                    foreach (System.Collections.Generic.KeyValuePair<int, Heartbeat> pairs in currentBatch.Entries)
                     {
                         Heartbeat currentBeat = pairs.Value;
                         Context.LuaEngine["result"] = 0;
@@ -175,9 +176,10 @@ namespace Defib.Service
                         Context.LuaEngine.DoFile("scripts/" + currentBeat.Script);
 
                         // Send heartbeat if result is 1
-                        if (Int32.Parse(Context.LuaEngine["result"].ToString()) == 1)
+                        if (int.Parse(Context.LuaEngine["result"].ToString()) == 1)
                         {
-                            SendHeartbeat(currentBeat.Key);
+                            Console.WriteLine(currentBeat.Name + " met interval " + currentBeat.Interval + " op " + currentBeat.NextBeat + " (" + currentTimestamp + ")");
+                            //SendHeartbeat(currentBeat.Key);
                         }
 
                         currentBeat.NextBeat = currentTimestamp + currentBeat.Interval;

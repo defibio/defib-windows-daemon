@@ -1,0 +1,24 @@
+﻿.v-cloak {
+    display: none;
+}
+
+.loading {
+    margin-top: 50px;
+}
+
+.panel-login {
+    margin-top: 50px;
+    width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.app {
+    margin-top: 25px;
+}
+
+.main-body {
+    margin-top: 25px;
+    left: 0;
+    right: 0;
+}

@@ -1,6 +1,9 @@
 ﻿using Defib.Service;
 using System;
 using System.Threading;
+using Microsoft.Owin.Hosting;
+using Defib.Entity;
+using System.Collections.Generic;
 
 namespace Defib
 {
@@ -22,6 +25,9 @@ namespace Defib
             {
                 Heart.Recalculate = true;
             }
+
+            // Initialize API
+            WebApp.Start<Api>("http://localhost:2700");
 
             // Start threads
             Thread generateBatchesThread = new Thread(Heart.GenerateBatches);

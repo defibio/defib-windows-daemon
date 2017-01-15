@@ -30,9 +30,9 @@ namespace Defib
             if (buildTables)
             {
                 string buildHeartbeatSql =
-                    "CREATE TABLE heartbeats (id INT, name VARCHAR(255), key VARCHAR(255), interval INT, next_beat INT, last_beat INT, script VARCHAR(255))";
+                    "CREATE TABLE heartbeats (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(255), key VARCHAR(255), interval INT, next_beat INT, last_beat INT, script VARCHAR(255))";
                 string buildUserSql =
-                    "CREATE TABLE users (id INT, username VARCHAR(255), password VARCHAR(255), salt VARCHAR(255), admin INT)";
+                    "CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, username VARCHAR(255), password VARCHAR(255), salt VARCHAR(255), admin INT)";
 
                 SQLiteCommand buildHeartbeatCommand = new SQLiteCommand(buildHeartbeatSql, Connection);
                 buildHeartbeatCommand.ExecuteNonQuery();
@@ -68,7 +68,7 @@ namespace Defib
 
             while (entityListReader.Read())
             {
-                entityList.Add(Int32.Parse(entityListReader[1].ToString()));
+                entityList.Add(Int32.Parse(entityListReader[0].ToString()));
             }
 
             foreach (int entity in entityList)
@@ -117,7 +117,7 @@ namespace Defib
             {
                 // Update
                 string createEntityQuery =
-                    "UPDATE users SET name = @Name, key = @Key, interval = @Interval, next_beat = @NextBeat, last_beat = @LastBeat, script = @Script WHERE id = @Id";
+                    "UPDATE heartbeats SET name = @Name, key = @Key, interval = @Interval, next_beat = @NextBeat, last_beat = @LastBeat, script = @Script WHERE id = @Id";
                 SQLiteCommand createEntityCommand = new SQLiteCommand(createEntityQuery, Connection);
                 createEntityCommand.Parameters.Add(new SQLiteParameter("@Id", heartbeat.Id));
                 createEntityCommand.Parameters.Add(new SQLiteParameter("@Name", heartbeat.Name));
@@ -132,9 +132,8 @@ namespace Defib
             {
                 // Create
                 string createEntityQuery =
-                    "INSERT INTO heartbeats (id, name, key, interval, next_beat, last_beat, script) VALUES (@Id, @Name, @Key, @Interval, @NextBeat, @LastBeat, @Script)";
+                    "INSERT INTO heartbeats (name, key, interval, next_beat, last_beat, script) VALUES (@Name, @Key, @Interval, @NextBeat, @LastBeat, @Script)";
                 SQLiteCommand createEntityCommand = new SQLiteCommand(createEntityQuery, Connection);
-                createEntityCommand.Parameters.Add(new SQLiteParameter("@Id", heartbeat.Id));
                 createEntityCommand.Parameters.Add(new SQLiteParameter("@Name", heartbeat.Name));
                 createEntityCommand.Parameters.Add(new SQLiteParameter("@Key", heartbeat.Key));
                 createEntityCommand.Parameters.Add(new SQLiteParameter("@Interval", heartbeat.Interval));
@@ -145,9 +144,27 @@ namespace Defib
             }
         }
 
+        public static void DeleteHeartbeat(int id)
+        {
+            string deleteEntityQuery =
+                    "DELETE FROM heartbeats WHERE id = @Id";
+            SQLiteCommand createEntityCommand = new SQLiteCommand(deleteEntityQuery, Connection);
+            createEntityCommand.Parameters.Add(new SQLiteParameter("@Id", id));
+            createEntityCommand.ExecuteNonQuery();
+        }
+
         #endregion
 
         #region USERS
+
+        public static void DeleteUser(int id)
+        {
+            string deleteEntityQuery =
+                    "DELETE FROM users WHERE id = @Id";
+            SQLiteCommand createEntityCommand = new SQLiteCommand(deleteEntityQuery, Connection);
+            createEntityCommand.Parameters.Add(new SQLiteParameter("@Id", id));
+            createEntityCommand.ExecuteNonQuery();
+        }
 
         public static void LoadUsers()
         {
@@ -180,9 +197,14 @@ namespace Defib
                    "SELECT id FROM users WHERE username = @Username";
             SQLiteCommand entityFetchCommand = new SQLiteCommand(entityFetchQuery, Connection);
             entityFetchCommand.Parameters.Add(new SQLiteParameter("@Username", username));
-            int entityId = Int32.Parse(entityFetchCommand.ExecuteScalar().ToString());
+            SQLiteDataReader entityFetchReader = entityFetchCommand.ExecuteReader();
 
-            return entityId;
+            while (entityFetchReader.Read())
+            {
+                return Int32.Parse(entityFetchReader[0].ToString());
+            }
+
+            return -1;
         }
 
         public static User ValidateUser(string username, string password)
@@ -191,7 +213,12 @@ namespace Defib
             tempUser.Id = GetUserId(username);
             tempUser = LoadUser(tempUser);
 
-            if (Utils.HashPassword(password, tempUser.Password, username) == tempUser.Password)
+            if (tempUser.Id == -1)
+            {
+                return tempUser;
+            }
+
+            if (Utils.HashPassword(password, tempUser.Salt, username) == tempUser.Password)
             {
                 // TODO: Create token
             }
@@ -251,9 +278,8 @@ namespace Defib
             {
                 // Create
                 string createEntityQuery =
-                    "INSERT INTO users (id, username, password, salt, admin) VALUES (@Id, @Username, @Password, @Salt, @Admin)";
+                    "INSERT INTO users (id, username, password, salt, admin) VALUES (@Username, @Password, @Salt, @Admin)";
                 SQLiteCommand createEntityCommand = new SQLiteCommand(createEntityQuery, Connection);
-                createEntityCommand.Parameters.Add(new SQLiteParameter("@Id", user.Id));
                 createEntityCommand.Parameters.Add(new SQLiteParameter("@Username", user.Username));
                 createEntityCommand.Parameters.Add(new SQLiteParameter("@Password", user.Password));
                 createEntityCommand.Parameters.Add(new SQLiteParameter("@Salt", user.Salt));

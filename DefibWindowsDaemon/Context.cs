@@ -1,6 +1,7 @@
 ﻿using Defib.Entity;
 using System.Collections.Generic;
 using NLua;
+using Defib.Security;
 
 namespace Defib
 {
@@ -8,6 +9,7 @@ namespace Defib
     {
         public static Dictionary<int, Heartbeat> Heartbeats;
         public static Dictionary<int, User> Users;
+        public static Dictionary<string, Token> Tokens;
 
         public static Lua LuaEngine;
 
@@ -15,6 +17,7 @@ namespace Defib
         {
             Heartbeats = new Dictionary<int, Heartbeat>();
             Users = new Dictionary<int, User>();
+            Tokens = new Dictionary<string, Token>();
 
             LuaEngine = new Lua();
         }

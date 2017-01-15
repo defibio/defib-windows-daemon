@@ -1,13 +1,45 @@
-﻿using System;
+﻿using Defib.Security;
+using System;
 
 namespace Defib
 {
     public static class Utils
     {
+
+        #region TOKENS
+
+        public static bool IsTokenValid(string token)
+        {
+            if (!Context.Tokens.ContainsKey(token))
+            {
+                return false;
+            }
+
+            Token localToken = Context.Tokens[token];
+
+            if (localToken.Expires > GetCurrentTimestamp())
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        #endregion
+
+        #region CRYPTO
+
         public static string HashPassword(string password, string hash, string username)
         {
             return EasyEncryption.SHA.ComputeSHA256Hash(string.Format("{0}{1}{2}", password, hash, username));
         }
+
+        public static string GenerateToken(string username)
+        {
+            return EasyEncryption.SHA.ComputeSHA256Hash(string.Format("{0}{1}", username, GetCurrentTimestamp()));
+        }
+
+        #endregion
 
         #region TIMESTAMPS
 

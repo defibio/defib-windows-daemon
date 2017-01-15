@@ -2,7 +2,7 @@
 
 namespace Defib.Security
 {
-    class Token
+    public class Token
     {
         public int Id;
         public string Key;
