@@ -118,7 +118,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controller\UserController.cs" />
     <Compile Include="Controller\HeartbeatController.cs" />
     <Compile Include="Controller\ScriptController.cs" />
     <Compile Include="Controller\AuthorizationController.cs" />
@@ -153,7 +152,7 @@
     <Content Include="Control\assets\ace\editor.html" />
     <Content Include="Control\assets\ace\kitchen-sink.html" />
     <Content Include="Control\assets\css\app.css" />
-    <Content Include="Control\assets\index.html" />
+    <Content Include="Control\index.html" />
     <Content Include="Control\assets\js\app.js" />
   </ItemGroup>
   <ItemGroup>

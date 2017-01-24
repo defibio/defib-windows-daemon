@@ -31,7 +31,9 @@ namespace Defib
 
             // Start threads
             Thread generateBatchesThread = new Thread(Heart.GenerateBatches);
+            generateBatchesThread.Start();
             Thread executeBatchesThread = new Thread(Heart.ExecuteBatches);
+            executeBatchesThread.Start();
 
             bool shouldRun = true;
 

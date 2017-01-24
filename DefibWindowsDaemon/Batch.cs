@@ -7,5 +7,10 @@ namespace Defib
     {
         public int Execute;
         public Dictionary<int, Heartbeat> Entries;
+
+        public Batch()
+        {
+            this.Entries = new Dictionary<int, Heartbeat>();
+        }
     }
 }

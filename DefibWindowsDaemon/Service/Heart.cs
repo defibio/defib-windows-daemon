@@ -23,7 +23,7 @@ namespace Defib.Service
 
         public static void SendHeartbeat(string key)
         {
-            WebRequest httpRequest = WebRequest.Create("https://defib.io/heartbeat/receiver/" + key);
+            WebRequest httpRequest = WebRequest.Create("https://defib.io/heartbeat/receiver/" + key.Trim());
             WebResponse httpResponse = httpRequest.GetResponse();
 
             Stream httpStream = httpResponse.GetResponseStream();
@@ -49,7 +49,9 @@ namespace Defib.Service
 
                     int currentTimestamp = Utils.GetCurrentTimestamp();
 
-                    foreach (System.Collections.Generic.KeyValuePair<int, Heartbeat> pairs in Context.Heartbeats)
+                    Dictionary<int, Heartbeat> heartbeats = (Dictionary<int, Heartbeat>)Context.Heartbeats;
+
+                    foreach (KeyValuePair<int, Heartbeat> pairs in heartbeats)
                     {
                         if (Processed.ContainsKey(pairs.Value.Id))
                         {
@@ -73,7 +75,6 @@ namespace Defib.Service
                             }
 
                             heartbeat.NextBeat = currentTimestamp;
-                            Context.Heartbeats[pairs.Key] = heartbeat;
                             Processed.Add(heartbeat.Id, heartbeat);
                         }
                         else if (heartbeat.NextBeat == -1)
@@ -88,13 +89,14 @@ namespace Defib.Service
                             }
                             else
                             {
-                                Batches.Add(nextBeat, new Batch());
-                                Batches[nextBeat].Execute = nextBeat;
-                                Batches[nextBeat].Entries.Add(heartbeat.Id, heartbeat);
+                                Batch tempBatch = new Batch();
+                                tempBatch.Execute = nextBeat;
+                                tempBatch.Entries.Add(heartbeat.Id, heartbeat);
+
+                                Batches.Add(nextBeat, tempBatch);
                             }
 
                             heartbeat.NextBeat = nextBeat;
-                            Context.Heartbeats[pairs.Key] = heartbeat;
                             Processed.Add(heartbeat.Id, heartbeat);
                         }
                         else
@@ -111,7 +113,6 @@ namespace Defib.Service
                                 Batches[heartbeat.NextBeat].Entries.Add(heartbeat.Id, heartbeat);
                             }
 
-                            Context.Heartbeats[pairs.Key] = heartbeat;
                             Processed.Add(heartbeat.Id, heartbeat);
                         }
                     }
@@ -119,7 +120,7 @@ namespace Defib.Service
                 else
                 {
                     // We are not recalculating, so just go your own way *random fleetwood mac*
-                    foreach (System.Collections.Generic.KeyValuePair<int, Heartbeat> pairs in Context.Heartbeats)
+                    foreach (KeyValuePair<int, Heartbeat> pairs in Context.Heartbeats)
                     {
                         if (Processed.ContainsKey(pairs.Value.Id))
                         {
@@ -139,7 +140,6 @@ namespace Defib.Service
                             Batches[heartbeat.NextBeat].Entries.Add(heartbeat.Id, heartbeat);
                         }
 
-                        Context.Heartbeats[pairs.Key] = heartbeat;
                         Processed.Add(heartbeat.Id, heartbeat);
                         Executing.Remove(heartbeat.Id);
                     }
@@ -167,7 +167,7 @@ namespace Defib.Service
                 {
                     Batch currentBatch = Batches[currentTimestamp];
 
-                    foreach (System.Collections.Generic.KeyValuePair<int, Heartbeat> pairs in currentBatch.Entries)
+                    foreach (KeyValuePair<int, Heartbeat> pairs in currentBatch.Entries)
                     {
                         Heartbeat currentBeat = pairs.Value;
                         Context.LuaEngine["result"] = 0;
@@ -176,15 +176,15 @@ namespace Defib.Service
                         Context.LuaEngine.DoFile("scripts/" + currentBeat.Script);
 
                         // Send heartbeat if result is 1
-                        if (int.Parse(Context.LuaEngine["result"].ToString()) == 1)
+                        if (Context.LuaEngine["result"].ToString() == "True")
                         {
-                            Console.WriteLine(currentBeat.Name + " met interval " + currentBeat.Interval + " op " + currentBeat.NextBeat + " (" + currentTimestamp + ")");
-                            //SendHeartbeat(currentBeat.Key);
+                            SendHeartbeat(currentBeat.Key);
                         }
 
                         currentBeat.NextBeat = currentTimestamp + currentBeat.Interval;
                         Processed.Remove(currentBeat.Id);
                         Context.Heartbeats[currentBeat.Id] = currentBeat;
+                        Recalculate = true;
                     }
                 }
 
