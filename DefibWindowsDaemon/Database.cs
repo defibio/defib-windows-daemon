@@ -278,7 +278,7 @@ namespace Defib
             {
                 // Create
                 string createEntityQuery =
-                    "INSERT INTO users (id, username, password, salt, admin) VALUES (@Username, @Password, @Salt, @Admin)";
+                    "INSERT INTO users (username, password, salt, admin) VALUES (@Username, @Password, @Salt, @Admin)";
                 SQLiteCommand createEntityCommand = new SQLiteCommand(createEntityQuery, Connection);
                 createEntityCommand.Parameters.Add(new SQLiteParameter("@Username", user.Username));
                 createEntityCommand.Parameters.Add(new SQLiteParameter("@Password", user.Password));
