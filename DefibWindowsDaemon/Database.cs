@@ -218,11 +218,7 @@ namespace Defib
                 return tempUser;
             }
 
-            if (Utils.HashPassword(password, tempUser.Salt, username) == tempUser.Password)
-            {
-                // TODO: Create token
-            }
-            else
+            if (Utils.HashPassword(password, tempUser.Salt, username) != tempUser.Password)
             {
                 tempUser = new Entity.User();
                 tempUser.Id = -1;
